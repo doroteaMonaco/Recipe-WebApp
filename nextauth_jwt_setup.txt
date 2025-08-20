@@ -1,0 +1,166 @@
+# 📌 NextAuth.js + JWT Authentication (con Prisma)
+
+## 🔹 1. Installazione pacchetti
+```bash
+npm install next-auth @prisma/client prisma bcryptjs
+```
+
+---
+
+## 🔹 2. Inizializza Prisma
+Se non lo hai già fatto:
+```bash
+npx prisma init
+```
+
+Schema minimale (`schema.prisma`):
+```prisma
+model User {
+  id       String   @id @default(cuid())
+  name     String?
+  email    String?  @unique
+  password String?  // se usi login con credentials
+  image    String?
+  accounts Account[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+```
+
+---
+
+## 🔹 3. Configurazione NextAuth con JWT
+Crea `pages/api/auth/[...nextauth].ts`:
+
+```ts
+import NextAuth from "next-auth";
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+
+const prisma = new PrismaClient();
+
+export const authOptions = {
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!,
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID!,
+      clientSecret: process.env.GOOGLE_SECRET!,
+    }),
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const user = await prisma.user.findUnique({
+          where: { email: credentials?.email },
+        });
+        if (!user || !user.password) return null;
+
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isValid) return null;
+
+        return user;
+      },
+    }),
+  ],
+  session: {
+    strategy: "jwt", // ✅ utilizzo dei JWT
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id;
+        session.user.email = token.email;
+      }
+      return session;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+export default NextAuth(authOptions);
+```
+
+---
+
+## 🔹 4. Variabili d’ambiente (`.env.local`)
+```env
+NEXTAUTH_SECRET=una_stringa_random_molto_lunga
+NEXTAUTH_URL=http://localhost:3000
+
+GITHUB_ID=...
+GITHUB_SECRET=...
+
+GOOGLE_ID=...
+GOOGLE_SECRET=...
+```
+
+Genera il secret con:
+```bash
+openssl rand -base64 32
+```
+
+👉 Lo generi **una sola volta** e lo tieni uguale tra dev e produzione. Se lo cambi, invalidi tutte le sessioni.
+
+---
+
+## 🔹 5. Uso lato client
+```tsx
+"use client";
+
+import { useSession, signIn, signOut } from "next-auth/react";
+
+export default function Home() {
+  const { data: session } = useSession();
+
+  if (session) {
+    return (
+      <>
+        <p>Benvenuto, {session.user?.email}</p>
+        <button onClick={() => signOut()}>Logout</button>
+      </>
+    );
+  }
+  return (
+    <>
+      <p>Non sei loggato</p>
+      <button onClick={() => signIn()}>Login</button>
+    </>
+  );
+}
+```
+
+---
+
+## 🔹 Riassunto
+- Usi **JWT** al posto delle sessioni DB → più semplice e veloce.
+- `NEXTAUTH_SECRET` è fondamentale per firmare i token → generane uno e non cambiarlo.
+- Supporto login con **GitHub**, **Google** e **email/password**.
+- Tutto funziona via **cookie**, quindi compatibile con il tuo approccio abituale.
