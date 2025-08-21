@@ -14,13 +14,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//NEXTAUTH AUTHENTICATION
 model User {
   id       String   @id @default(cuid())
-  name     String?
-  email    String?  @unique
+  email    String  @unique
   password String?  // se usi login tradizionale con credentials
+  name     String?
   image    String?
+  bio      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   accounts Account[]
+
+  recipes    Recipe[]
+  comments   Comment[]
+  reactions  Reaction[]
+  ratings    Rating[]
+  badges     UserBadge[]
+
+  @@map("users")
 }
 
 model Account {
@@ -29,10 +42,173 @@ model Account {
   type              String
   provider          String
   providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text // Per chiamare API GitHub/Google
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
-//recipe, ingredient, recipe_ing, 
+//OTHER TABLES
+
+model Recipe {
+  id  String  @id @default(cuid())
+  name String
+  description String? @db.Text
+  instructions String? @db.Text
+  prepTime Int?
+  cookTime Int?
+  servings Int?
+  difficulty String?
+  imageUrl String?
+  calories Float? // kcal per porzione
+  proteins Float? // grammi proteine per porzione
+  carbs    Float? // grammi carboidrati per porzione
+  fats     Float? // grammi grassi per porzione
+  fiber    Float? // grammi fibre per porzione
+  sugars   Float?
+  isPublished Boolean  @default(false) // Bozza o pubblicata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  ingredients RecipeIngredient[]
+  comments    Comment[]
+  reactions   Reaction[]
+  ratings     Rating[]
+  
+  @@map("recipes")
+}
+
+model Ingredient {
+  id          String @id @default(cuid())
+  name        String @unique // "Pomodoro", "Mozzarella", etc.
+  description String? // Descrizione ingrediente
+  
+  // Valori nutrizionali standard per 100g
+  caloriesPer100g Float?
+  proteinsPer100g Float?
+  carbsPer100g    Float?
+  fatsPer100g     Float?
+  fiberPer100g    Float?
+  sugarPer100g Float?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  recipes RecipeIngredient[]
+  
+  @@map("ingredients")
+}
+
+model RecipeIngredient {
+  id       String @id @default(cuid())
+  quantity Float  // 200, 1.5, etc.
+  unit     String // "g", "kg", "ml", "l", "tazze", "cucchiai"
+  notes    String? // "a dadini", "tritato fine", "opzionale"
+  
+  // Relations
+  recipeId     String
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredientId String
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  
+  @@unique([recipeId, ingredientId]) // Un ingrediente una volta per ricetta
+  @@map("recipe_ingredients")
+}
+
+//TABLE FOR SOCIAL INTERACTION
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  // Reactions on comments
+  reactions Reaction[]
+  
+  // Per commenti annidati (reply a commenti)
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+  
+  @@map("comments")
+}
+
+// I tuoi models base (User, Recipe, Comment, Like) +
+
+// Sistema reazioni multiple
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String   // "like", "love", "wow", "helpful", "yummy"
+  createdAt DateTime @default(now())
+  
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Può essere su ricetta O commento
+  recipeId  String?
+  recipe    Recipe?  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, recipeId, type]) // Un tipo per ricetta per utente
+  @@unique([userId, commentId, type]) // Un tipo per commento per utente
+  @@map("reactions")
+}
+
+// Sistema rating ricette
+model Rating {
+  id        String   @id @default(cuid())
+  stars     Int      // 1-5 stelle
+  createdAt DateTime @default(now())
+  
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, recipeId]) // Un rating per ricetta per utente
+  @@map("ratings")
+}
+
+// Sistema badge gamification
+model Badge {
+  id          String @id @default(cuid())
+  name        String @unique // "Chef Novizio", "Master Baker", "Commentatore"
+  description String
+  icon        String // emoji o URL immagine
+  rarity      String // "common", "rare", "epic", "legendary"
+  
+  users UserBadge[]
+  
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  earnedAt DateTime @default(now())
+  
+  userId  String
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId String
+  badge   Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, badgeId]) // Un badge una volta per utente
+  @@map("user_badges")
+}

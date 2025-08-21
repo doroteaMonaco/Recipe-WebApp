@@ -239,3 +239,7 @@ docker-compose down
 * Creare CRUD ricette e commenti con API routes di Next.js
 * Implementare caching con Redis
 * Deploy finale su Vercel + eventuale DB remoto
+
+
+//creazione db + run su docker
+docker compose up -d db redis
