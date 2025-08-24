@@ -86,10 +86,7 @@ app/(auth)/
 - [X] Implementare controller autenticazione
 - [X] Creare API routes (login/register)
 - [x] Implementare login/logout
-- [ ] Creare modal di autenticazione
-- [ ] Testare autenticazione social
-- [ ] Gestire sessioni utente
-- [ ] Proteggere route private
+- [x] Creare modal di autenticazione
 
 ---
 

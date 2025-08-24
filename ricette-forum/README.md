@@ -243,3 +243,6 @@ docker-compose down
 
 //creazione db + run su docker
 docker compose up -d db redis
+
+![alt text](image.png)
+![alt text](image-1.png)
