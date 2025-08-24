@@ -51,7 +51,6 @@ app/api/auth/
 src/components/auth/
 ├── LoginModal.jsx                        # Modal login
 ├── SignupModal.jsx                       # Modal registrazione
-├── AuthProvider.jsx                      # Context provider
 ├── ProtectedRoute.jsx                    # Route protection
 ├── LoginButton.jsx                       # Pulsante login
 ├── LogoutButton.jsx                      # Pulsante logout
@@ -61,9 +60,7 @@ src/components/auth/
 #### 1.3 Auth Hooks (Semplificati con Controller)
 ```
 src/hooks/
-├── useAuth.js                           # ⭐ Hook sessione utente (NextAuth wrapper)
-├── useSession.js                        # Hook sessione NextAuth
-└── useAuthModal.js                      # Hook modal auth (solo UI)
+├── useAuth.js                           # ⭐ Hook sessione utente
 ```
 
 #### 1.4 Auth Context/Providers (Leggeri)
@@ -71,6 +68,7 @@ src/hooks/
 src/providers/
 ├── AuthModalProvider.jsx                # Provider per modal UI
 └── Providers.jsx                        # Provider combinato
+└── SessionProvider.jsx                        # Provider combinato
 ```
 
 #### 1.4 Auth Pages
@@ -87,7 +85,7 @@ app/(auth)/
 - [X] Creare JWT strategy
 - [X] Implementare controller autenticazione
 - [X] Creare API routes (login/register)
-- [ ] Implementare login/logout
+- [x] Implementare login/logout
 - [ ] Creare modal di autenticazione
 - [ ] Testare autenticazione social
 - [ ] Gestire sessioni utente

@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { LoginButton } from "@/src/components/auth/LoginButton";
+import { LogoutButton } from "@/src/components/auth/LogoutButton";
 
 export default function Home() {
   return (
@@ -24,6 +26,12 @@ export default function Home() {
             Save and see your changes instantly.
           </li>
         </ol>
+
+        {/* Test Auth Components */}
+        <div className="flex gap-4 items-center">
+          <LoginButton />
+          <LogoutButton />
+        </div>
 
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <a
