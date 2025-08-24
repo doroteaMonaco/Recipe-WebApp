@@ -32,6 +32,20 @@ app/api/auth/[...nextauth]/route.js       # ⭐ Endpoint NextAuth
 .env.local                                # ⭐ Environment variables
 ```
 
+#### 1.1.1 Auth Controllers
+```
+src/controllers/
+└── authController.js                     # ⭐ Controller autenticazione (login/register)
+```
+
+#### 1.1.2 Auth API Routes
+```
+app/api/auth/
+├── [...nextauth]/route.js                # ⭐ NextAuth handler
+├── login/route.js                        # ⭐ Login endpoint
+└── register/route.js                     # ⭐ Register endpoint
+```
+
 #### 1.2 Auth Components
 ```
 src/components/auth/
@@ -44,12 +58,19 @@ src/components/auth/
 └── SocialLogin.jsx                       # Login GitHub/Google
 ```
 
-#### 1.3 Auth Hooks
+#### 1.3 Auth Hooks (Semplificati con Controller)
 ```
 src/hooks/
-├── useAuth.js                           # ⭐ Hook principale auth
-├── useSession.js                        # Hook sessione
-└── useAuthModal.js                      # Hook modal auth
+├── useAuth.js                           # ⭐ Hook sessione utente (NextAuth wrapper)
+├── useSession.js                        # Hook sessione NextAuth
+└── useAuthModal.js                      # Hook modal auth (solo UI)
+```
+
+#### 1.4 Auth Context/Providers (Leggeri)
+```
+src/providers/
+├── AuthModalProvider.jsx                # Provider per modal UI
+└── Providers.jsx                        # Provider combinato
 ```
 
 #### 1.4 Auth Pages
@@ -64,7 +85,9 @@ app/(auth)/
 ### ✅ **Checklist Fase 1:**
 - [X] Configurare NextAuth con GitHub e Google
 - [X] Creare JWT strategy
-- [X] Implementare login/logout
+- [X] Implementare controller autenticazione
+- [X] Creare API routes (login/register)
+- [ ] Implementare login/logout
 - [ ] Creare modal di autenticazione
 - [ ] Testare autenticazione social
 - [ ] Gestire sessioni utente
@@ -181,8 +204,11 @@ app/recipes/
 └── search/page.jsx                      # Risultati ricerca
 ```
 
-#### 3.3 Recipe APIs
+#### 3.3 Recipe APIs & Controllers
 ```
+src/controllers/
+└── recipeController.js                  # ⭐ Controller ricette
+
 app/api/recipes/
 ├── route.js                             # ⭐ GET/POST recipes
 ├── [id]/
@@ -252,8 +278,11 @@ app/ingredients/
 └── search/page.jsx                      # Ricerca ingredienti
 ```
 
-#### 4.3 Ingredient APIs
+#### 4.3 Ingredient APIs & Controllers
 ```
+src/controllers/
+└── ingredientController.js              # ⭐ Controller ingredienti
+
 app/api/ingredients/
 ├── route.js                             # ⭐ GET/POST ingredienti
 ├── [id]/route.js                        # ⭐ GET/PUT/DELETE ingrediente
@@ -306,8 +335,12 @@ src/components/reactions/
 └── ReactionPicker.jsx                   # Picker emoji reactions
 ```
 
-#### 5.3 Social APIs
+#### 5.3 Social APIs & Controllers
 ```
+src/controllers/
+├── commentController.js                 # ⭐ Controller commenti
+└── reactionController.js                # ⭐ Controller reactions
+
 app/api/comments/
 ├── route.js                             # ⭐ POST commenti
 ├── [id]/
@@ -354,8 +387,11 @@ src/components/rating/
 └── RatingStats.jsx                      # Statistiche rating
 ```
 
-#### 6.2 Rating APIs
+#### 6.2 Rating APIs & Controllers
 ```
+src/controllers/
+└── ratingController.js                  # ⭐ Controller rating
+
 app/api/ratings/
 ├── route.js                             # ⭐ POST rating
 ├── [id]/route.js                        # ⭐ GET/PUT/DELETE rating
@@ -413,8 +449,11 @@ app/users/
     └── edit/page.jsx                    # ⭐ Modifica profilo
 ```
 
-#### 7.3 Profile APIs
+#### 7.3 Profile APIs & Controllers
 ```
+src/controllers/
+└── userController.js                    # ⭐ Controller utenti/profili
+
 app/api/users/
 ├── route.js                             # ⭐ GET/POST users
 ├── [id]/
@@ -464,8 +503,11 @@ src/components/badges/
 └── BadgeLeaderboard.jsx                 # Classifica badge
 ```
 
-#### 8.2 Badge APIs
+#### 8.2 Badge APIs & Controllers
 ```
+src/controllers/
+└── badgeController.js                   # ⭐ Controller badge
+
 app/api/badges/
 ├── route.js                             # GET badge
 ├── [id]/route.js                        # GET badge specifico
@@ -521,8 +563,13 @@ app/
     └── results/page.jsx                 # Risultati
 ```
 
-#### 9.3 Additional APIs
+#### 9.3 Additional APIs & Controllers
 ```
+src/controllers/
+├── searchController.js                  # ⭐ Controller ricerca globale
+├── uploadController.js                  # ⭐ Controller upload files
+└── statsController.js                   # ⭐ Controller statistiche
+
 app/api/
 ├── search/
 │   ├── route.js                         # Ricerca globale
@@ -635,4 +682,3 @@ docs/
 
 ---
 
-**🚀 Inizia dalla FASE 1 (Authentication) e procedi in ordine!**
