@@ -26,10 +26,11 @@ export class AuthController {
                 return NextResponse.json({message: 'Email già in uso'}, {status: 409});
             }
 
+            const hashedPassword = await bcrypt.hash(data.password, 10);
             const newUser = await userService.createUser({
                 name: data.name,
                 email: data.email,
-                password: data.password
+                password: hashedPassword
             });
 
             return NextResponse.json({

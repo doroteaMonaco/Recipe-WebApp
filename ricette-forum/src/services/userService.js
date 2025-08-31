@@ -1,4 +1,4 @@
-import {prisma} from '../lib/prisma.js';
+import prisma from '../lib/prisma';
 
 export const userService = {
     async findById(id){
@@ -7,7 +7,6 @@ export const userService = {
             select: {
                 id: true,
                 email: true,
-                password: false,
                 name: true,
                 image: true,
                 bio: true,
@@ -23,7 +22,6 @@ export const userService = {
             select: {
                 id: true,
                 email: true,
-                password: false,
                 name: true,
                 image: true,
                 bio: true,
@@ -55,7 +53,6 @@ export const userService = {
             select: {
                 id: true,
                 email: true,
-                password: false,
                 name: true,
                 image: true,
                 bio: true,
@@ -72,7 +69,6 @@ export const userService = {
             select: {
                 id: true,
                 email: true,
-                password: false,
                 name: true,
                 image: true,
                 bio: true,

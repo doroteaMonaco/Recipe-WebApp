@@ -1,50 +1,51 @@
-import Image from "next/image";
+'use client';
 import { LoginButton } from "@/src/components/auth/LoginButton";
 import { LogoutButton } from "@/src/components/auth/LogoutButton";
+import { SocialLogin } from "@/src/components/auth/SocialLogin";
+import { ProtectedRoute } from "@/src/components/auth/ProtectedRoute";
+import { useAuth } from "@/src/hooks/useAuth";
+import { useAuthModal } from "@/src/providers/AuthModalProvider";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.jsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { user, isAuthenticated, isLoading, status } = useAuth();
+  const { openSignUp } = useAuthModal();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy
-          </a>
-        </div>
-      </main>
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8 bg-gray-50">
+      <h1 className="text-3xl font-bold mb-2">Test Autenticazione</h1>
+      <div className="flex gap-4">
+        <LoginButton />
+        <LogoutButton />
+        <button
+          onClick={openSignUp}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+        >
+          Registrati
+        </button>
+      </div>
+      <SocialLogin className="w-full max-w-xs" />
+      <div className="mt-6 p-4 bg-white rounded shadow w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-2">Stato utente:</h2>
+        {isLoading ? (
+          <p className="text-blue-600">Caricamento...</p>
+        ) : isAuthenticated ? (
+          <div>
+            <p className="text-green-700">Autenticato come <b>{user?.name || user?.email}</b></p>
+            <pre className="bg-gray-100 p-2 rounded text-xs mt-2">{JSON.stringify(user, null, 2)}</pre>
+          </div>
+        ) : (
+          <p className="text-red-600">Non autenticato</p>
+        )}
+        <p className="mt-2 text-xs text-gray-500">Status: {status}</p>
+      </div>
+      <div className="mt-8 w-full max-w-md">
+        <ProtectedRoute fallback={<div className="p-4 bg-yellow-100 rounded">Questa sezione è visibile solo agli utenti autenticati.</div>}>
+          <div className="p-4 bg-green-100 rounded">
+            <h3 className="font-bold">Area Privata</h3>
+            <p>Benvenuto nella sezione protetta! Solo gli utenti autenticati possono vedere questo messaggio.</p>
+          </div>
+        </ProtectedRoute>
+      </div>
     </div>
   );
 }
